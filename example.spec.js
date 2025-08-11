@@ -93,9 +93,28 @@ test.describe('Auth', () => {
         await firstSizeCell.click();
         await page.waitForTimeout(1000)
 
-        // Chờ ngắn cho UI cập nhật trước khi lặp tiếp
+        // Chờ 
         await page.waitForTimeout(300);
       }
+    });
+
+    // Click Split packages link
+    await test.step('Click Split packages', async () => {
+      const splitPackagesLink = page.locator("//a[contains(@class, 'btn-primary') and contains(normalize-space(.), 'Split packages')]");
+      await expect(splitPackagesLink).toBeVisible({ timeout: 10000 });
+      await splitPackagesLink.scrollIntoViewIfNeeded();
+      await splitPackagesLink.click();
+    });
+
+    // Split packages: Search supplier and pick the first item
+    await test.step('Split packages - select first supplier', async () => {
+      const supplierSelect = page.locator('.ant-select.split-package__supplier-select.mr-3.ant-select-single.ant-select-show-arrow.ant-select-show-search .ant-select-selector');
+      await supplierSelect.waitFor({ state: 'visible', timeout: 15000 });
+      await supplierSelect.click();
+
+      const firstOption = page.locator('//div[@class="rc-virtual-list-holder-inner"]/div[1]');
+      await expect(firstOption).toBeVisible({ timeout: 10000 });
+      await firstOption.click();
     });
   });
 });
