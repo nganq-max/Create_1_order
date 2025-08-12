@@ -123,6 +123,7 @@ test.describe('Auth', () => {
       await expect(markProcessingBtn).toBeVisible({ timeout: 15000 });
       await markProcessingBtn.scrollIntoViewIfNeeded();
       await markProcessingBtn.click();
+      await page.waitForTimeout(1000);
     });
   });
 });
