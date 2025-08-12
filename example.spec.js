@@ -116,5 +116,13 @@ test.describe('Auth', () => {
       await expect(firstOption).toBeVisible({ timeout: 10000 });
       await firstOption.click();
     });
+
+    // Click Mark processing (Mark 1/1 packages to processing)
+    await test.step('Mark packages to processing', async () => {
+      const markProcessingBtn = page.locator("//button[.//span[contains(normalize-space(.), 'Mark 1/1 packages to processing')]]");
+      await expect(markProcessingBtn).toBeVisible({ timeout: 15000 });
+      await markProcessingBtn.scrollIntoViewIfNeeded();
+      await markProcessingBtn.click();
+    });
   });
 });
