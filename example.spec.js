@@ -1,4 +1,6 @@
+//khai báo thư viện
 const { test, expect } = require('@playwright/test');
+const markDoneFileIn = require('./apiMarkDoneFileIn');
 require('dotenv').config();
 
 function assertRequiredEnv() {
@@ -12,8 +14,10 @@ function assertRequiredEnv() {
 
 test.describe('Auth', () => {
   test('Login FFM Staging', async ({ page }) => {
+    test.setTimeout(120000);
     assertRequiredEnv();
 //Login vào FFM
+
     await page.goto('/login');
 
     const usernameInput = page.locator('input[name="username"]');
@@ -22,12 +26,12 @@ test.describe('Auth', () => {
 
     await expect(usernameInput).toBeVisible();
 
-    await usernameInput.fill(process.env.FFM_USERNAME);
-    await passwordInput.fill(process.env.FFM_PASSWORD);
-    await loginButton.click();
+    await usernameInput.fill(process.env.FFM_USERNAME);//nhập username
+    await passwordInput.fill(process.env.FFM_PASSWORD);//nhập password
+    await loginButton.click();//click vào button login
 
-    await expect(page).toHaveURL(/\/a\/orders/);
-    await expect(page.getByRole('heading', { level: 1, name: 'Orders' })).toBeVisible();
+    await expect(page).toHaveURL(/\/a\/orders/);//kiểm tra url có chứa /a/orders
+    await expect(page.getByRole('heading', { level: 1, name: 'Orders' })).toBeVisible();//kiểm tra heading có chứa Orders
 
     // Search supplier: open select and choose first item using provided XPath
     // await test.step('Select first supplier from dropdown', async () => {
@@ -42,9 +46,9 @@ test.describe('Auth', () => {
     await test.step('Filter by Unfulfilled status', async () => {
       // Tìm label chứa chữ Unfulfilled
       const unfulfilledLabel = page.locator('//label[.//span[text()="Unfulfilled"]]');
-      await expect(unfulfilledLabel).toBeVisible({ timeout: 10000 });
-      await unfulfilledLabel.click();
-      await page.waitForTimeout(1000);
+      await expect(unfulfilledLabel).toBeVisible({ timeout: 10000 });//kiểm tra unfulfilledLabel có hiển thị
+      await unfulfilledLabel.click();//click vào unfulfilledLabel
+      await page.waitForTimeout(1000);//chờ 1 giây
     })
 
     // Click vào order đầu tiên trong danh sách
@@ -53,7 +57,8 @@ test.describe('Auth', () => {
       await firstOrderCode.click();
       await page.waitForTimeout(5000);
     });
-
+    
+     
     // Đếm và lặp qua tất cả nút "Select product", thực hiện map product cho từng dòng
     await test.step('Map products for all Select product buttons', async () => {
       const items = page.locator("//button[normalize-space(text())='Select product']");
@@ -125,5 +130,43 @@ test.describe('Auth', () => {
       await markProcessingBtn.click();
       await page.waitForTimeout(1000);
     });
+
+    //chạy api để done filein
+    await page.waitForSelector('h1.PageTitle.OrderNumber', {timeout: 15000})
+    const orderNumberElement = page.locator('h1.PageTitle.OrderNumber');
+    const orderNumberText = (await orderNumberElement.textContent()).replace("#", "");
+    console.log(orderNumberText)
+    await markDoneFileIn(orderNumberText, page)
+    
+    
+    // Reload page before pushing
+    await test.step('Reload page before Push', async () => {
+      try {
+        await page.reload({ waitUntil: 'domcontentloaded' });
+      } catch (e) {
+        // Fallback if the app never reaches network idle due to long polling/websockets
+        await page.evaluate(() => location.reload());
+        await page.waitForLoadState('domcontentloaded', { timeout: 10000 });
+      }
+    });
+    await page.waitForTimeout(5000)
+    
+    // Click Push buttons
+    await test.step('Click Push (btn)', async () => {
+      const pushBtn = page.locator("//button[contains(@class, 'btn') and contains(text(), 'Push')]");
+      await expect(pushBtn).toBeVisible({ timeout: 10000 });
+      await pushBtn.click();
+      await expect(page.locator('button.btn.btn-success.ml-3', { hasText: 'Push' })).toBeVisible({ timeout: 20000 });
+    });
+    
+    await page.waitForTimeout(1000)
+
+    // Click tiếp
+    await test.step('Click Push (btn-success ml-3)', async () => {
+      const pushSuccessBtn = page.locator('button.btn.btn-success.ml-3', { hasText: 'Push' });
+      await expect(pushSuccessBtn).toBeVisible({ timeout: 10000 });
+      await pushSuccessBtn.click();
+    });
+    await page.pause()
   });
 });
