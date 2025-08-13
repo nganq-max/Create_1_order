@@ -13,7 +13,7 @@ function assertRequiredEnv() {
 test.describe('Auth', () => {
   test('Login FFM Staging', async ({ page }) => {
     assertRequiredEnv();
-
+//Login vào FFM
     await page.goto('/login');
 
     const usernameInput = page.locator('input[name="username"]');
@@ -47,7 +47,7 @@ test.describe('Auth', () => {
       await page.waitForTimeout(1000);
     })
 
-    // Open first OrderCode link in the table
+    // Click vào order đầu tiên trong danh sách
     await test.step('Open first OrderCode', async () => {
       const firstOrderCode = page.locator('(//td[@class="OrderCode"]/a[1])[1]');
       await firstOrderCode.click();
@@ -67,7 +67,7 @@ test.describe('Auth', () => {
         const dialog = page.getByRole('dialog').first();
         await expect(dialog).toBeVisible({ timeout: 15000 });
 
-        // Mở supplier filter trong modal (AntD): click vào .ant-select-selector bên trong .supplierFilter
+        // Mở supplier filter
         const supplierSelect = page.locator('//div[contains(@class,"supplierFilter")]//div[contains(@class,"ant-select-selector")]').first();
         await supplierSelect.waitFor({ state: 'visible', timeout: 15000 });
         await supplierSelect.click();
@@ -98,7 +98,7 @@ test.describe('Auth', () => {
       }
     });
 
-    // Click Split packages link
+    // Click button Split packages
     await test.step('Click Split packages', async () => {
       const splitPackagesLink = page.locator("//a[contains(@class, 'btn-primary') and contains(normalize-space(.), 'Split packages')]");
       await expect(splitPackagesLink).toBeVisible({ timeout: 10000 });
